@@ -486,14 +486,89 @@ class project
 				case 3 :
 				{
 					// A driver
+					boolean driverflag = true;
+					Scanner scan = new Scanner(System.in);
+
+					do{
+						System.out.println("Driver, what would you like to do?");
+						System.out.println("1. Search requests");
+						System.out.println("2. Take a request");
+						System.out.println("3. Finish a trip");
+						System.out.println("4. Go back");
+
+						int driver_choice = getChoice (1,4);
+
+						switch (driver_choice){
+							case 1: {
+								System.out.println("Please enter your ID.");
+								int driver_id = scan.nextInt();
+								System.out.println("Please enter the coordinates of your location.");
+								int coor_x = scan.nextInt();
+								int coor_y = scan.nextInt();
+								System.out.println("Please entere the maximum distance from you to the passenger.");
+								int max_dis = scan.nextInt();
+								//temporary
+								System.out.println(driver_id);
+								System.out.println(coor_x);
+								System.out.println(coor_y);
+								System.out.println(max_dis);
+							} break;
+							case 2:{
+								System.out.println("Please enter your ID.");
+								int driver_id = scan.nextInt();
+								System.out.println("Please enter the request ID.");
+								int request_id = scan.nextInt();
+								//temporary
+								System.out.println(driver_id);
+								System.out.println(request_id);
+							} break;
+							case 3:{
+								System.out.println("Please enter your ID.");
+								int driver_id = scan.nextInt();
+								//temporary
+								System.out.println(driver_id);
+							} break;
+							case 4:{
+								driverflag = false;
+							} break;
+						}
+					} while(driverflag);
 					// note : table trip take sequence of data in project file :
 					// trip(id, driver_id, passenger_id, start_time, end_time,start_location, destination, fee)
 					// which does not follow sequence of data in project file :
 					// trip(id, driver_id, passenger_id, start_location, destination, start_time, end_time, fee)
+
 				}break;
 				case 4 :
 				{
 					// A manager
+					boolean managerflag = true;
+					Scanner scan = new Scanner(System.in);
+
+					do{
+						System.out.println("Manager, what would you like to do?");
+						System.out.println("1. Find trips");
+						System.out.println("2. Go back");
+
+						int manager_choice = getChoice (1,2);
+
+						switch(manager_choice){
+							case 1: {
+								System.out.println("Please enter the minimum traveling distance.");
+								int min_dis = scan.nextInt();
+								System.out.println("Please enter the maximum traveling distance.");
+								int max_dis = scan.nextInt();
+								//temporary
+								System.out.println(min_dis);
+								System.out.println(max_dis);
+							} break;
+							case 2: {
+								managerflag = false;
+							} break;
+						}
+
+					} while(managerflag);
+
 				}break;
 				case 5 :
 				{	// None of the above
