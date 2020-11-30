@@ -509,82 +509,115 @@ class project
                                                 
                                                 // save and analyze the passenger id
                                                 int passenger_ID;
-                                                while (true){
-                                                    System.out.println("Please enter your ID.");
-                                                    passenger_ID = scan.nextInt();
-                                                    scan.nextLine();
-                                                    String sql_id = "SELECT id from passenger where id = ?;";
-                                                    pstmt0 = con.prepareStatement(sql_id);
-                                                    pstmt0.setInt(1,passenger_ID);
-                                                    resultSet_0 = pstmt0.executeQuery();
-                                                    if (!resultSet_0.isBeforeFirst()){
-                                                        System.out.println("[ERROR] ID not found");
-                                                        continue;
-                                                    }break;
-                                                }
-                                                int passenger_No_passengers;
-                                                // save and analyze the number of passengers
-                                                while(true){
-                                                    System.out.println("Please enter the number of passengers.");
-                                                    passenger_No_passengers = scan.nextInt();
-                                                    scan.nextLine();
-                                                    if (!(passenger_No_passengers <=8 && passenger_No_passengers>=1)){
-                                                        System.out.println("[ERROR] Invalid number of passengers.");
-                                                        continue;
+                                                try{
+                                                    while (true){
+                                                        System.out.println("Please enter your ID.");
+                                                        passenger_ID = scan.nextInt();
+                                                        scan.nextLine();
+                                                        String sql_id = "SELECT id from passenger where id = ?;";
+                                                        pstmt0 = getPreparedStatement(con,sql_id);
+                                                        pstmt0.setInt(1,passenger_ID);
+                                                        resultSet_0 = pstmt0.executeQuery();
+                                                        if (!resultSet_0.isBeforeFirst()){
+                                                            System.out.println("[ERROR] ID not found");
+                                                            continue;
+                                                        }break;
                                                     }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
+                                                   
+                                                int passenger_No_passengers;
+                                                // save and analyze the number of passengers
+                                                    while(true){
+                                                        System.out.println("Please enter the number of passengers.");
+                                                        passenger_No_passengers = scan.nextInt();
+                                                        scan.nextLine();
+                                                        if (!(passenger_No_passengers <=8 && passenger_No_passengers>=1)){
+                                                            System.out.println("[ERROR] Invalid number of passengers.");
+                                                            continue;
+                                                        }
+                                                        break;
+                                                    }
                                                 
                                                 
                                                 // save and analyze the start location 
                                                 String passenger_sloca = null ;
-                                                while(true){
-                                                    System.out.println("Please enter the start location.");
-                                                    passenger_sloca = scan.nextLine();
-                                                    String sql_sloca = "SELECT name from taxi_stop where name = ?;";
-                                                    pstmt1 = con.prepareStatement(sql_sloca);
-                                                    pstmt1.setString(1,passenger_sloca);
-                                                    resultSet_1 = pstmt1.executeQuery();
-                                                    if (!(resultSet_1.isBeforeFirst())){
-                                                        System.out.println("[ERROR] Start Location not found.");
-                                                        continue;
-                                                    }  
+                                                try{
+                                                    while(true){
+                                                        System.out.println("Please enter the start location.");
+                                                        passenger_sloca = scan.nextLine();
+                                                        String sql_sloca = "SELECT name from taxi_stop where name = ?;";
+                                                        pstmt1 = getPreparedStatement(con,sql_sloca);
+                                                        pstmt1.setString(1,passenger_sloca);
+                                                        resultSet_1 = pstmt1.executeQuery();
+                                                        if (!(resultSet_1.isBeforeFirst())){
+                                                            System.out.println("[ERROR] Start Location not found.");
+                                                            continue;
+                                                        }  
+                                                        break;
+                                                    }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
                                                     break;
-                                                }        
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
+                                                    break;
+                                                }       
                                                 
                                                  // save and analyze the destination
                                                   String passenger_dest;
-                                                while(true){
-                                                    System.out.println("Please enter the destination.");
-                                                    passenger_dest = scan.nextLine();
-                                                    String sql_dest = "SELECT name from taxi_stop where name = ?;";
-                                                    pstmt2 = con.prepareStatement(sql_dest);
-                                                    pstmt2.setString(1,passenger_dest);
-                                                    resultSet_2 = pstmt2.executeQuery();
-                                                    if (!(resultSet_2.isBeforeFirst())){
-                                                        System.out.println("[ERROR] Destination not found.");
-                                                       continue;
-                                                    }else if (passenger_dest.equals(passenger_sloca) ){
-                                                              System.out.println("[ERROR] Destination and start location should be different.");  
-                                                              continue;
-                                                    }   
+                                                  try{
+                                                    while(true){
+                                                        System.out.println("Please enter the destination.");
+                                                        passenger_dest = scan.nextLine();
+                                                        String sql_dest = "SELECT name from taxi_stop where name = ?;";
+                                                        pstmt2 = getPreparedStatement(con,sql_dest);
+                                                        pstmt2.setString(1,passenger_dest);
+                                                        resultSet_2 = pstmt2.executeQuery();
+                                                        if (!(resultSet_2.isBeforeFirst())){
+                                                            System.out.println("[ERROR] Destination not found.");
+                                                           continue;
+                                                        }else if (passenger_dest.equals(passenger_sloca) ){
+                                                                  System.out.println("[ERROR] Destination and start location should be different.");  
+                                                                  continue;
+                                                        }   
+                                                        break;
+                                                }
+                                                  }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
                                                 //save and analyze the model
                                                 String passenger_model_1;
-                                                while(true){
-                                                    System.out.println("Please enter the model. (press enter to skip)");
-                                                    passenger_model_1 = scan.nextLine();
-                                                    String sql_model = "SELECT * from vehicle where model LIKE \"" + passenger_model_1 + "%\"";
-                                                    pstmt3 = con.prepareStatement(sql_model);
-                                                    resultSet_3 = pstmt3.executeQuery();
-                                                    if ( passenger_model_1.isEmpty()){   
+                                                try{
+                                                    while(true){
+                                                        System.out.println("Please enter the model. (press enter to skip)");
+                                                        passenger_model_1 = scan.nextLine();
+                                                        String sql_model = "SELECT * from vehicle where model LIKE \"" + passenger_model_1 + "%\"";
+                                                        pstmt3 = getPreparedStatement(con,sql_model);
+                                                        resultSet_3 = pstmt3.executeQuery();
+                                                        if ( passenger_model_1.isEmpty()){   
+                                                            break;
+                                                        }
+                                                        else if (!resultSet_3.isBeforeFirst()){
+                                                            System.out.println("[ERROR] Model not found.");
+                                                            continue;
+                                                        }                     
                                                         break;
                                                     }
-                                                    else if (!resultSet_3.isBeforeFirst()){
-                                                        System.out.println("[ERROR] Model not found.");
-                                                        continue;
-                                                    }                     
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
                                                 
@@ -600,42 +633,59 @@ class project
                                                 
                                                 
                                                 //check if passenger has open request or not first    
-                                               String check_open_request = "select * from request r where r.passenger_id =" + passenger_ID + " and taken = 0;";
-                                               pstmt6 = con.prepareStatement(check_open_request);
-                                               resultSet_6 = pstmt6.executeQuery();
-                                               if ((resultSet_6.isBeforeFirst())){
-                                                   System.out.println("You have an open request already.");
-                                                   break;
-                                               }
+                                                try{
+                                                    String check_open_request = "select * from request r where r.passenger_id =" + passenger_ID + " and taken = 0;";
+                                                    pstmt6 = getPreparedStatement(con,check_open_request);
+                                                    resultSet_6 = pstmt6.executeQuery();
+                                                    if ((resultSet_6.isBeforeFirst())){
+                                                        System.out.println("You have an open request already.");
+                                                        break;
+                                                    }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
+                                                    break;
+                                                }
 
                                                 // create a request  
-                                                String count_request_string = "select count(*) from vehicle v, driver d where v.seats >="+ passenger_No_passengers +" and "
-                                                        + "d.vehicle_id=v.id and d.driving_years >=" + passenger_driver_years +" and v.model LIKE \"" +passenger_model_1 + "%\""; 
-                                                pstmt4 = con.prepareStatement(count_request_string);
-                                                resultSet_4 = pstmt4.executeQuery();
-                                                resultSet_4.next();
-                                                int count_requests = resultSet_4.getInt("count(*)");
+                                                try{
+                                                    String count_request_string = "select count(*) from vehicle v, driver d where v.seats >="+ passenger_No_passengers +" and "
+                                                            + "d.vehicle_id=v.id and d.driving_years >=" + passenger_driver_years +" and v.model LIKE \"" +passenger_model_1 + "%\""; 
+                                                    pstmt4 = getPreparedStatement(con,count_request_string);
+                                                    resultSet_4 = pstmt4.executeQuery();
+                                                    resultSet_4.next();
+                                                    int count_requests = resultSet_4.getInt("count(*)");
+
+                                                    // if count<0 continue to another iteration.
+                                                    if (count_requests<1){
+                                                        System.out.println("No records found. Please adjust the criteria.");
+                                                        continue;
+                                                    }
+                                                    // insert new request.
+                                                    else{   
+
+                                                        String sql_request = "insert into request (passenger_id, start_location, destination, model,"
+                                                                + "passengers, taken) VALUES (?,?,?,?,?,?)";					
+                                                        pstmt5 = getPreparedStatement(con,sql_request);
+                                                        pstmt5.setInt(1,passenger_ID);
+                                                        pstmt5.setString(2,passenger_sloca);
+                                                        pstmt5.setString(3,passenger_dest);
+                                                        pstmt5.setString(4,passenger_model_1);
+                                                        pstmt5.setInt(5,passenger_No_passengers );
+                                                        pstmt5.setInt(6, 0);       
+                                                        pstmt5.executeUpdate();
+                                                        System.out.println("Your request is placed."+count_requests+" drivers are able to take the request.");
+                                                    }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
+                                                    break;
+                                                }
                                                 
-                                                // if count<0 continue to another iteration.
-                                                if (count_requests<1){
-                                                    System.out.println("No records found. Please adjust the criteria.");
-                                                    continue;
-                                                }
-                                                // insert new request.
-                                                else{   
-                                               
-                                                    String sql_request = "insert into request (passenger_id, start_location, destination, model,"
-                                                            + "passengers, taken) VALUES (?,?,?,?,?,?)";					
-                                                    pstmt5 = con.prepareStatement(sql_request);
-                                                    pstmt5.setInt(1,passenger_ID);
-                                                    pstmt5.setString(2,passenger_sloca);
-                                                    pstmt5.setString(3,passenger_dest);
-                                                    pstmt5.setString(4,passenger_model_1);
-                                                    pstmt5.setInt(5,passenger_No_passengers );
-                                                    pstmt5.setInt(6, 0);       
-                                                    int pas_record_update = pstmt5.executeUpdate();
-                                                    System.out.println("Your request is placed."+count_requests+" drivers are able to take the request.");
-                                                }
                                                 pstmt0.close();
                                                 resultSet_0.close();
                                                 pstmt1.close();
@@ -662,18 +712,26 @@ class project
                                                 
                                                 // save and analyze the passengers id
                                                 int passenger_ID;
-                                                while (true){
-                                                    System.out.println("Please enter your ID.");
-                                                    passenger_ID = scan.nextInt();
-                                                    scan.nextLine();
-                                                    String sql_id = "SELECT id from passenger where id = ?;";
-                                                    pstmt0 = con.prepareStatement(sql_id);
-                                                    pstmt0.setInt(1,passenger_ID);
-                                                    resultSet_0 = pstmt0.executeQuery();
-                                                    if (!resultSet_0.isBeforeFirst()){
-                                                        System.out.println("[ERROR] ID not found");
-                                                        continue;
-                                                    }break;
+                                                try{
+                                                    while (true){
+                                                        System.out.println("Please enter your ID.");
+                                                        passenger_ID = scan.nextInt();
+                                                        scan.nextLine();
+                                                        String sql_id = "SELECT id from passenger where id = ?;";
+                                                        pstmt0 = getPreparedStatement(con,sql_id);
+                                                        pstmt0.setInt(1,passenger_ID);
+                                                        resultSet_0 = pstmt0.executeQuery();
+                                                        if (!resultSet_0.isBeforeFirst()){
+                                                            System.out.println("[ERROR] ID not found");
+                                                            continue;
+                                                        }break;
+                                                    }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
+                                                    break;
                                                 }
                                                     
                                                 // check if the date is in correct form
@@ -686,7 +744,6 @@ class project
                                                            break;
                                                     } catch (DateTimeParseException e){
                                                            System.out.println("[ERROR] not correct form of date");
-                                                           continue;
                                                            }
                                                 }
                                                 
@@ -700,51 +757,65 @@ class project
                                                            break;
                                                     } catch (DateTimeParseException e){
                                                            System.out.println("[ERROR] not correct form of date");
-                                                           continue;
                                                            }
                                                 }
                                                 
                                                 // save and analyze the passengers destination
                                                 String passenger_dest;
-                                                while(true){
-                                                    System.out.println("Please enter the destination.");
-                                                    passenger_dest = scan.nextLine();
-                                                    String sql_dest = "SELECT name from taxi_stop where name = ?;";
-                                                    pstmt2 = con.prepareStatement(sql_dest);
-                                                    pstmt2.setString(1,passenger_dest);
-                                                    resultSet_2 = pstmt2.executeQuery();
-                                                    if (!(resultSet_2.isBeforeFirst())){
-                                                        System.out.println("[ERROR] Destination not found.");
-                                                       continue;
+                                                try{
+                                                    while(true){
+                                                        System.out.println("Please enter the destination.");
+                                                        passenger_dest = scan.nextLine();
+                                                        String sql_dest = "SELECT name from taxi_stop where name = ?;";
+                                                        pstmt2 = con.prepareStatement(sql_dest);
+                                                        pstmt2.setString(1,passenger_dest);
+                                                        resultSet_2 = pstmt2.executeQuery();
+                                                        if (!(resultSet_2.isBeforeFirst())){
+                                                            System.out.println("[ERROR] Destination not found.");
+                                                           continue;
+                                                        }
+                                                        break;
                                                     }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
                                                 
                                                 
                                                 //return the finished trip records
-                                                String psql = "SELECT t.id, d.Name, d.vehicle_ID, v.model, t.start_time, t.end_time, t.fee, t.start_location, t.destination "
-                                                        + "FROM trip t, driver d, vehicle v "
-                                                        + "WHERE t.driver_id=d.id and d.vehicle_id=v.id and t.passenger_id =" + passenger_ID + "  and t.start_time >= \'"+  passenger_sdate 
-                                                        + "\' and t.end_time <= \'" + passenger_edate  + "\' and t.destination = \'" + passenger_dest + "\';";
-                                                System.out.println(psql);
-                                                        
-                                                pstmt1 = con.prepareStatement(psql);            
-                                                resultSet_1 = pstmt1.executeQuery();
-                                                if (!resultSet_1.isBeforeFirst()){
-                                                    System.out.println("No records found.");
-                                                }else{
-                                                while (resultSet_1.next()){
-                                                    System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start, End, Fee, Start Location, Destination");
-                                                    System.out.print(resultSet_1.getInt(1)+"\t");
-                                                    System.out.print(resultSet_1.getString(2)+"\t");
-                                                    System.out.print(resultSet_1.getString(3)+"\t");
-                                                    System.out.print(resultSet_1.getString(4)+"\t");
-                                                    System.out.print(resultSet_1.getDate(5)+"\t");
-                                                    System.out.print(resultSet_1.getDate(6)+"\t");
-                                                    System.out.print(resultSet_1.getInt(7)+"\t");
-                                                    System.out.print(resultSet_1.getString(8)+"\t");
-                                                    System.out.print(resultSet_1.getString(9));
-                                                    System.out.println();
+                                                try{
+                                                    String psql = "SELECT t.id, d.Name, d.vehicle_ID, v.model, t.start_time, t.end_time, t.fee, t.start_location, t.destination "
+                                                            + "FROM trip t, driver d, vehicle v "
+                                                            + "WHERE t.driver_id=d.id and d.vehicle_id=v.id and t.passenger_id =" + passenger_ID + "  and t.start_time >= \'"+  passenger_sdate 
+                                                            + "\' and t.end_time <= \'" + passenger_edate  + "\' and t.destination = \'" + passenger_dest + "\';";
+                                                    pstmt1 = con.prepareStatement(psql);            
+                                                    resultSet_1 = pstmt1.executeQuery();
+                                                    if (!resultSet_1.isBeforeFirst()){
+                                                        System.out.println("No records found.");
+                                                    }else{
+                                                        while (resultSet_1.next()){
+                                                            System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start, End, Fee, Start Location, Destination");
+                                                            System.out.print(resultSet_1.getInt(1)+"\t");
+                                                            System.out.print(resultSet_1.getString(2)+"\t");
+                                                            System.out.print(resultSet_1.getString(3)+"\t");
+                                                            System.out.print(resultSet_1.getString(4)+"\t");
+                                                            System.out.print(resultSet_1.getDate(5)+"\t");
+                                                            System.out.print(resultSet_1.getDate(6)+"\t");
+                                                            System.out.print(resultSet_1.getInt(7)+"\t");
+                                                            System.out.print(resultSet_1.getString(8)+"\t");
+                                                            System.out.print(resultSet_1.getString(9));
+                                                            System.out.println();
+                                                        }
+                                                    }
+                                                }catch(SQLException e)
+                                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                    break;
+                                                }catch (NullPointerException e)
+                                                    {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
+                                                    break;
                                                 }
                                                 pstmt0.close();
                                                 resultSet_0.close();
@@ -753,8 +824,6 @@ class project
                                                  pstmt2.close();
                                                 resultSet_2.close();
                                             }break;
-                                            }
-                                            
                                             
                                             case 3: {
                                                 passengerflag = false;
