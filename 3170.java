@@ -685,20 +685,24 @@ class project
                                                     {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
-                                                
-                                                pstmt0.close();
-                                                resultSet_0.close();
-                                                pstmt1.close();
-                                                resultSet_1.close();
-                                                pstmt2.close();
-                                                resultSet_2.close();
-                                                pstmt3.close();
-                                                resultSet_3.close();
-                                                pstmt4.close();
-                                                resultSet_4.close();
-                                                pstmt5.close();
-                                                pstmt6.close();
-                                                resultSet_6.close();
+                                                try{
+							pstmt0.close();
+							resultSet_0.close();
+							pstmt1.close();
+							resultSet_1.close();
+							pstmt2.close();
+							resultSet_2.close();
+							pstmt3.close();
+							resultSet_3.close();
+							pstmt4.close();
+							resultSet_4.close();
+							pstmt5.close();
+							pstmt6.close();
+							resultSet_6.close();
+						}catch (SQLException e)
+                                                        {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                        break;
+					    	}
                                                      
                                             }break;
                                             
@@ -817,12 +821,18 @@ class project
                                                     {System.out.println("[ERROR] pstmt0 maybe not be properly set up.");
                                                     break;
                                                 }
-                                                pstmt0.close();
-                                                resultSet_0.close();
-                                                 pstmt1.close();
-                                                resultSet_1.close();
-                                                 pstmt2.close();
-                                                resultSet_2.close();
+						
+						try{
+							pstmt0.close();
+							resultSet_0.close();
+							 pstmt1.close();
+							resultSet_1.close();
+							 pstmt2.close();
+							resultSet_2.close();
+						}catch (SQLException e)
+                                                        {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                                        break;
+					    	}
                                             }break;
                                             
                                             case 3: {
