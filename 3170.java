@@ -866,19 +866,76 @@ class project
 						int driver_choice = getChoice (1,4);
 
 						switch (driver_choice){
-							case 1: {
-								System.out.println("Please enter your ID.");
-								int driver_id = scan.nextInt();
+							case 1: { // search request
+								
+								int driver_id;
+								int coor_x;
+								int coor_y;
+								int max_dis;
+								PreparedStatement pstmt_id;
+								PreparedStatement pstmt_search;
+								ResultSet resset_id;
+								ResultSet resset_search;
+
+								// check valid driver id
+								try{
+                                	while (true){
+                                        System.out.println("Please enter your ID.");
+                                        driver_id = scan.nextInt();
+                                        String find_id = "SELECT id from driver where id = ?;";
+                                        pstmt_id = getPreparedStatement(con,find_id);
+                                        pstmt_id.setInt(1,driver_id);
+                                        resset_id = pstmt_id.executeQuery();
+                                        if (!resset_id.isBeforeFirst()){
+                                            System.out.println("[ERROR] ID not found.");
+                                            continue;
+                                        }break;
+                                    }
+                                }catch(SQLException e)
+                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                    break;
+                                }catch (NullPointerException e)
+                                    {System.out.println("[ERROR] pstmt_id maybe not be properly set up.");
+                                    break;
+                                }
+								
+								// get coordinates
 								System.out.println("Please enter the coordinates of your location.");
-								int coor_x = scan.nextInt();
-								int coor_y = scan.nextInt();
+								coor_x = scan.nextInt();
+								coor_y = scan.nextInt();
+
+								// get max distance
 								System.out.println("Please entere the maximum distance from you to the passenger.");
-								int max_dis = scan.nextInt();
-								//temporary
-								System.out.println(driver_id);
-								System.out.println(coor_x);
-								System.out.println(coor_y);
-								System.out.println(max_dis);
+								max_dis = scan.nextInt();
+
+								// search for qualified and open requests in the distance
+								try{
+									String search_sql = "SELECT r.id, p.name, r.passengers, r.start_location, r.destination "+
+														"FROM request r, driver d, vehicle v, taxi_stop ts, passenger p "+
+														"WHERE d.id=" + driver_id + " and d.vehicle_id=v.id and v.seats>=r.passengers and r.taken=0 and v.model LIKE \'r.model%\' and d.driving_years>=r.driving_years and r.start_location=ts.name and "+ max_dis + ">=ABS(" + coor_x + "-ts.location_x)+ABS("+ coor_y +"-ts.location_y) and r.passenger_id=p.id;";
+									pstmt_search = getPreparedStatement(con, search_sql);
+									resset_search = pstmt_search.executeQuery();
+									if (!resset_search.isBeforeFirst()){
+										System.out.println("No records found.");
+									}else{
+										while (resset_search.next()){
+											System.out.println("request ID, passenger name, num of passengers, start location, destination\n");
+											System.out.print(resset_search.getInt(1)+"\t");
+											System.out.print(resset_search.getString(2)+"\t");
+											System.out.print(resset_search.getInt(3)+"\t");
+											System.out.print(resset_search.getString(4)+"\t");
+											System.out.print(resset_search.getString(5)+"\t");
+											System.out.println();
+										}
+									}
+								}catch(SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}catch (NullPointerException e)
+									{System.out.println("[ERROR] pstmt_search maybe not be properly set up.");
+									break;
+								}
+								
 							} break;
 							case 2:{
 								System.out.println("Please enter your ID.");
