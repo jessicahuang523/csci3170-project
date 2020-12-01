@@ -665,17 +665,18 @@ class project
                                                         continue;
                                                     }
                                                     // insert new request.
-                                                    else{   
+                                                 else{   
 
                                                         String sql_request = "insert into request (passenger_id, start_location, destination, model,"
-                                                                + "passengers, taken) VALUES (?,?,?,?,?,?)";					
+                                                                + "passengers, taken, driving_years) VALUES (?,?,?,?,?,?,?)";					
                                                         pstmt5 = getPreparedStatement(con,sql_request);
                                                         pstmt5.setInt(1,passenger_ID);
                                                         pstmt5.setString(2,passenger_sloca);
                                                         pstmt5.setString(3,passenger_dest);
                                                         pstmt5.setString(4,passenger_model_1);
                                                         pstmt5.setInt(5,passenger_No_passengers );
-                                                        pstmt5.setInt(6, 0);       
+                                                        pstmt5.setInt(6, 0);      
+                                                        pstmt5.setInt(7,passenger_driver_years);
                                                         pstmt5.executeUpdate();
                                                         System.out.println("Your request is placed."+count_requests+" drivers are able to take the request.");
                                                     }
