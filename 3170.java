@@ -299,6 +299,7 @@ class project
 											"model varchar(30),"+
 											"passengers integer,"+
 											"taken integer,"+
+											"driving_years integer,"+
 											"primary key(id),"+
 											"foreign key (passenger_id) references passenger(id),"+
 											"foreign key (start_location) references taxi_stop(name),"+
