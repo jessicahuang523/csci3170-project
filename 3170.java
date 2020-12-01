@@ -979,13 +979,45 @@ class project
 
 						switch(manager_choice){
 							case 1: {
+								int min_dis;
+								int max_dis;
+								PreparedStatement trips_pstmt;
+								ResultSet resset_trips;
+
+								//get min and max
 								System.out.println("Please enter the minimum traveling distance.");
-								int min_dis = scan.nextInt();
+								min_dis = scan.nextInt();
 								System.out.println("Please enter the maximum traveling distance.");
-								int max_dis = scan.nextInt();
-								//temporary
-								System.out.println(min_dis);
-								System.out.println(max_dis);
+								max_dis = scan.nextInt();
+
+								//find trip
+								try{
+									String trips_sql = "SELECT t.id, d.name, p.name, t.start_location, t.destination " +
+														"FROM trip t, taxi_stop ts1, taxi_stop ts2, driver d, passenger p " +
+														"WHERE t.start_location=ts1.name and t.destination=ts2.name and "+ min_dis + "<=ABS(ts1.location_x-ts2.locationi_x)+ABS(ts1.location_y-ts2.location_y) and "+ max_dis + ">=ABS(ts1.location_x-ts2.locationi_x)+ABS(ts1.location_y-ts2.location_y) and t.driver_id=d.id and t.passenger_id=p.id;";
+									trips_pstmt = getPreparedStatement(con, trips_sql);            
+									resset_trips = trips_pstmt.executeQuery();
+									if (!resset_trips.isBeforeFirst()){
+										System.out.println("No records found.");
+									}else{
+										while (resset_trips.next()){
+											System.out.println("trip id, driver name, passenger name, start location, destination, duration\n");
+											System.out.print(resultSet_1.getInt(1)+"\t");
+											System.out.print(resultSet_1.getString(2)+"\t");
+											System.out.print(resultSet_1.getString(3)+"\t");
+											System.out.print(resultSet_1.getString(4)+"\t");;
+											System.out.print(resultSet_1.getString(5)+"\t");
+											System.out.println();
+										}
+									}
+								}catch(SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}catch (NullPointerException e)
+									{System.out.println("[ERROR] trips_pstmt maybe not be properly set up.");
+									break;
+								}
+								
 							} break;
 							case 2: {
 								managerflag = false;
