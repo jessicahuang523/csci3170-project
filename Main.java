@@ -918,7 +918,7 @@ class Main
 								try{
 									String search_sql = "SELECT r.id, p.name, r.passengers, r.start_location, r.destination "+
 														"FROM request r, driver d, vehicle v, taxi_stop ts, passenger p "+
-														"WHERE d.id=" + driver_id + " and d.vehicle_id=v.id and v.seats>=r.passengers and r.taken=0 and d.driving_years>=r.driving_years and r.start_location=ts.name and "+ max_dis + ">=(ABS(" + coor_x + "-ts.location_x)+ABS("+ coor_y +"-ts.location_y)) and r.passenger_id=p.id;";
+														"WHERE d.id=" + driver_id + " and d.vehicle_id=v.id and v.seats>=r.passengers and r.taken=0 and d.driving_years>=r.driving_years and r.start_location=ts.name and "+ max_dis + ">=(ABS(" + coor_x + "-ts.location_x)+ABS("+ coor_y +"-ts.location_y)) and r.passenger_id=p.id and v.model LIKE CONCAT(r.model, '%');";
 									pstmt_search = getPreparedStatement(con, search_sql);
 									resset_search = pstmt_search.executeQuery();
 									if (!resset_search.isBeforeFirst()){
@@ -962,10 +962,12 @@ class Main
 								PreparedStatement pstmt_update;
 								PreparedStatement pstmt_trip;
 								PreparedStatement pstmt_unfinish;
+								PreparedStatement pstmt_tripid;
 								ResultSet resset_id;
 								ResultSet resset_request;
 								ResultSet resset_search;
 								ResultSet resset_unfinish;
+								ResultSet resset_tripid;
 								
 								// check valid driver id
 								try{
@@ -1022,7 +1024,7 @@ class Main
 										// take request
 										String search_sql = "SELECT r.passenger_id, r.start_location, r.destination, p.name "+
 														"FROM request r, driver d, vehicle v, passenger p "+
-														"WHERE "+request_id+"=r.id and d.id="+driver_id+" and d.vehicle_id=v.id and v.seats>=r.passengers and d.driving_years>=r.driving_years and r.passenger_id=p.id;";
+														"WHERE "+request_id+"=r.id and d.id="+driver_id+" and d.vehicle_id=v.id and v.seats>=r.passengers and d.driving_years>=r.driving_years and r.passenger_id=p.id and v.model LIKE CONCAT(r.model, '%') and r.taken=0;";
 										pstmt_search = getPreparedStatement(con, search_sql);
 										resset_search = pstmt_search.executeQuery();
 										if(!resset_search.isBeforeFirst()){
@@ -1049,8 +1051,13 @@ class Main
 											pstmt_trip.setString(4,start_loc);
 											pstmt_trip.setString(5,des);
 											pstmt_trip.executeUpdate();
+											String tripid_sql = "SELECT t.id FROM trip t WHERE t.driver_id=" + driver_id + " and end_time is NULL;";
+											pstmt_tripid = getPreparedStatement(con, tripid_sql);
+											resset_tripid = pstmt_tripid.executeQuery();
+											resset_tripid.next();
+											int trip_id = resset_tripid.getInt(1);
 											System.out.println("Trip ID, Passenger name, Start");
-											System.out.println(", "+p_name+", "+dtf.format(now));
+											System.out.println(trip_id+", "+p_name+", "+dtf.format(now));
 										}
 									}
 								}catch(SQLException e)
@@ -1061,21 +1068,6 @@ class Main
 									break;
 								}
 
-								try{
-									pstmt_id.close();
-									resset_id.close();
-									//pstmt_request.close();
-									//resset_request.close();
-									//pstmt_search.close();
-									//resset_search.close();
-									pstmt_unfinish.close();
-									resset_unfinish.close();
-									//pstmt_update.close();
-									//pstmt_trip.close();				
-								}catch (SQLException e)
-									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
-									break;
-								}
 							} break;
 							case 3:{ // finish a trip
 
@@ -1165,16 +1157,6 @@ class Main
 									break;
 								}catch (NullPointerException e)
 									{System.out.println("[ERROR] pstmt_search maybe not be properly set up.");
-									break;
-								}
-								try{
-									pstmt_id.close();
-									resset_id.close();
-									pstmt_unfinish.close();
-									resset_unfinish.close();
-									//pstmt_finish.close();			
-								}catch (SQLException e)
-									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
 									break;
 								}
 									
