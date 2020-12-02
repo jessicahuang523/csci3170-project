@@ -627,7 +627,7 @@ class Main
                                                 int passenger_driver_years;
                                                 System.out.println("Please enter the minimum driving years of the driver. (press enter to skip)");
                                                 String passenger_mini_dyears = scan.nextLine();  
-                                                if (passenger_mini_dyears.isBlank()) {
+                                                if (passenger_mini_dyears.isEmpty()) {
                                                     passenger_driver_years = 0;                               
                                                 }else{
                                                     passenger_driver_years = Integer.parseInt(passenger_mini_dyears);
