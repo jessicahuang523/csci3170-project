@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.*;
 
-class project
+class Main
 {
 	
 	// connection method to connect to database
