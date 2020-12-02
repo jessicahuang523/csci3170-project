@@ -961,9 +961,11 @@ class project
 								PreparedStatement pstmt_search;
 								PreparedStatement pstmt_update;
 								PreparedStatement pstmt_trip;
+								PreparedStatement pstmt_unfinish;
 								ResultSet resset_id;
 								ResultSet resset_request;
 								ResultSet resset_search;
+								ResultSet resset_unfinish;
 								
 								// check valid driver id
 								try{
@@ -987,80 +989,87 @@ class project
                                     {System.out.println("[ERROR] pstmt_id maybe not be properly set up.");
                                     break;
                                 }
-
-								// check valid request id
-								try{
-                                	while (true){
-                                        System.out.println("Please enter the request ID.");
-                                        request_id = scan.nextInt();
-										scan.nextLine();
-                                        String find_request_id = "SELECT id from request where id = ?;";
-                                        pstmt_request = getPreparedStatement(con,find_request_id);
-                                        pstmt_request.setInt(1,request_id);
-                                        resset_request = pstmt_request.executeQuery();
-                                        if (!resset_request.isBeforeFirst()){
-                                            System.out.println("[ERROR] ID not found.");
-                                            continue;
-                                        }break;
-                                    }
-                                }catch(SQLException e)
-                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
-                                    break;
-                                }catch (NullPointerException e)
-                                    {System.out.println("[ERROR] pstmt_request maybe not be properly set up.");
-                                    break;
-                                }
 								
-								// take request
+								// check whether the driver has unfinished trip
 								try{
-									String search_sql = "SELECT r.passenger_id, r.start_location, r.destination, p.name "+
-														"FROM request r, driver d, vehicle v, passenger p "+
-														"WHERE "+request_id+"=r.id and d.id="+driver_id+" and d.vehicle_id=v.id and v.seats>=r.passengers and d.driving_years>=r.driving_years and r.passenger_id=p.id;";
-									pstmt_search = getPreparedStatement(con, search_sql);
-									resset_search = pstmt_search.executeQuery();
-									if(!resset_search.isBeforeFirst()){
-										System.out.println("[ERROR] Request not found or the criteria of the request is not satisfied.");
+									String unfinish_sql = "SELECT COUNT(*) "+
+														"FROM trip t "+
+														"WHERE t.driver_id="+driver_id+" and end_time is NULL;";
+									pstmt_unfinish = getPreparedStatement(con, unfinish_sql);
+									resset_unfinish = pstmt_unfinish.executeQuery();
+									resset_unfinish.next();
+									if (resset_unfinish.getInt(1)!=0){
+										System.out.println("You have unfinished trips.");
 									}
 									else{
-										resset_search.next();
-										int p_id = resset_search.getInt(1);
-										String start_loc = resset_search.getString(2);
-										String des = resset_search.getString(3);
-										String p_name = resset_search.getString(4);
-										String update_request = "UPDATE request " +
-																"SET taken=1 " +
-																"WHERE id=" + request_id + ";";
-										pstmt_update = getPreparedStatement(con, update_request);
-										pstmt_update.executeUpdate();
-										String sql_trip = "insert into trip (driver_id, passenger_id, start_time, end_time, start_location, destination, fee) VALUES(?,?,?,NULL,?,?,NULL)";					
-										pstmt_trip = getPreparedStatement(con,sql_trip);
-										DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-										LocalDateTime now = LocalDateTime.now();
-										pstmt_trip.setInt(1,driver_id);
-										pstmt_trip.setInt(2,p_id);
-										pstmt_trip.setTimestamp(3,java.sql.Timestamp.valueOf(now.format(dtf)));
-										pstmt_trip.setString(4,start_loc);
-										pstmt_trip.setString(5,des);
-										pstmt_trip.executeUpdate();
-										System.out.println("Trip ID, Passenger name, Start");
-										System.out.println(", "+p_name+", "+dtf.format(now));
+
+										// check valid request id
+										while (true){
+											System.out.println("Please enter the request ID.");
+											request_id = scan.nextInt();
+											scan.nextLine();
+											String find_request_id = "SELECT id from request where id = ?;";
+											pstmt_request = getPreparedStatement(con,find_request_id);
+											pstmt_request.setInt(1,request_id);
+											resset_request = pstmt_request.executeQuery();
+											if (!resset_request.isBeforeFirst()){
+												System.out.println("[ERROR] ID not found.");
+												continue;
+											}
+											else break;
+										}
+
+										// take request
+										String search_sql = "SELECT r.passenger_id, r.start_location, r.destination, p.name "+
+														"FROM request r, driver d, vehicle v, passenger p "+
+														"WHERE "+request_id+"=r.id and d.id="+driver_id+" and d.vehicle_id=v.id and v.seats>=r.passengers and d.driving_years>=r.driving_years and r.passenger_id=p.id;";
+										pstmt_search = getPreparedStatement(con, search_sql);
+										resset_search = pstmt_search.executeQuery();
+										if(!resset_search.isBeforeFirst()){
+											System.out.println("[ERROR] Request not found or the criteria of the request is not satisfied.");
+										}
+										else{
+											resset_search.next();
+											int p_id = resset_search.getInt(1);
+											String start_loc = resset_search.getString(2);
+											String des = resset_search.getString(3);
+											String p_name = resset_search.getString(4);
+											String update_request = "UPDATE request " +
+																	"SET taken=1 " +
+																	"WHERE id=" + request_id + ";";
+											pstmt_update = getPreparedStatement(con, update_request);
+											pstmt_update.executeUpdate();
+											String sql_trip = "insert into trip (driver_id, passenger_id, start_time, end_time, start_location, destination, fee) VALUES(?,?,?,NULL,?,?,NULL)";					
+											pstmt_trip = getPreparedStatement(con,sql_trip);
+											DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+											LocalDateTime now = LocalDateTime.now();
+											pstmt_trip.setInt(1,driver_id);
+											pstmt_trip.setInt(2,p_id);
+											pstmt_trip.setTimestamp(3,java.sql.Timestamp.valueOf(now.format(dtf)));
+											pstmt_trip.setString(4,start_loc);
+											pstmt_trip.setString(5,des);
+											pstmt_trip.executeUpdate();
+											System.out.println("Trip ID, Passenger name, Start");
+											System.out.println(", "+p_name+", "+dtf.format(now));
+										}
 									}
-									
 								}catch(SQLException e)
 									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
 									break;
 								}catch (NullPointerException e)
-									{System.out.println("[ERROR] pstmt maybe not be properly set up.");
+									{System.out.println("[ERROR] pstmt_search maybe not be properly set up.");
 									break;
 								}
 
 								try{
 									pstmt_id.close();
 									resset_id.close();
-									pstmt_request.close();
-									resset_request.close();
-									pstmt_search.close();
-									resset_search.close();
+									//pstmt_request.close();
+									//resset_request.close();
+									//pstmt_search.close();
+									//resset_search.close();
+									pstmt_unfinish.close();
+									resset_unfinish.close();
 									//pstmt_update.close();
 									//pstmt_trip.close();				
 								}catch (SQLException e)
@@ -1101,7 +1110,7 @@ class project
                                     break;
                                 }			
 
-								//check unfinish trip
+								//check unfinished trip
 								try{
 									String unfinish_sql = "SELECT t.id, p.name, t.passenger_id, t.start_time "+
 														"FROM trip t, passenger p "+
@@ -1120,30 +1129,35 @@ class project
 										System.out.print(resset_unfinish.getInt(3)+", ");
 										System.out.print(start);
 										System.out.println();
-										System.out.println("Do you want to finish the trip? [y/n]");
-										finish = scan.nextLine();
-										if(finish.equals("y")){
-											DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-											LocalDateTime now = LocalDateTime.now();
-											Timestamp end = java.sql.Timestamp.valueOf(now.format(dtf));
-											long milliseconds = end.getTime() - start.getTime();
-											int seconds = (int)milliseconds/1000;
-											int mins = seconds/60;
-											String finish_sql = "UPDATE trip SET end_time=?, fee=? WHERE id="+trip_id+";";
-											pstmt_finish = getPreparedStatement(con, finish_sql);
-											pstmt_finish.setTimestamp(1, end);
-											pstmt_finish.setInt(2, mins);
-											pstmt_finish.executeUpdate();
-											System.out.println("Trip ID, Passengerr name, Start, End, Fee");
-											System.out.print(trip_id+", ");
-											System.out.print(p_name+", ");
-											System.out.print(start+", ");
-											System.out.print(end+", ");
-											System.out.print(mins);
-											System.out.println();
-										}
-										else if (!finish.equals("n")){
-											System.out.println("[ERROR] Invalid input.");
+										while(true){
+											System.out.println("Do you want to finish the trip? [y/n]");
+											finish = scan.nextLine();
+											if(finish.equals("y")){
+												DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+												LocalDateTime now = LocalDateTime.now();
+												Timestamp end = java.sql.Timestamp.valueOf(now.format(dtf));
+												long milliseconds = end.getTime() - start.getTime();
+												int seconds = (int)milliseconds/1000;
+												int mins = seconds/60;
+												String finish_sql = "UPDATE trip SET end_time=?, fee=? WHERE id="+trip_id+";";
+												pstmt_finish = getPreparedStatement(con, finish_sql);
+												pstmt_finish.setTimestamp(1, end);
+												pstmt_finish.setInt(2, mins);
+												pstmt_finish.executeUpdate();
+												System.out.println("Trip ID, Passengerr name, Start, End, Fee");
+												System.out.print(trip_id+", ");
+												System.out.print(p_name+", ");
+												System.out.print(start+", ");
+												System.out.print(end+", ");
+												System.out.print(mins);
+												System.out.println();
+												break;
+											}
+											else if (!finish.equals("n")){
+												System.out.println("[ERROR] Invalid input.");
+												continue;
+											}
+											else break;
 										}
 									}
 								}catch(SQLException e)
