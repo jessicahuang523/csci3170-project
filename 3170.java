@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.*;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.*;
 
 class project
@@ -305,7 +306,7 @@ class project
 											"foreign key (start_location) references taxi_stop(name),"+
 											"foreign key (destination) references taxi_stop(name)"+
 											");" );
-							create_table(stmt, "trip",  "(id integer,"+
+							create_table(stmt, "trip",  "(id integer AUTO_INCREMENT,"+
 											"driver_id integer not null,"+
 											"passenger_id integer not null,"+
 											"start_time varchar(19),"+
@@ -802,16 +803,16 @@ class project
                                                     if (!resultSet_1.isBeforeFirst()){
                                                         System.out.println("No records found.");
                                                     }else{
+														System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start, End, Fee, Start Location, Destination");
                                                         while (resultSet_1.next()){
-                                                            System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start, End, Fee, Start Location, Destination");
-                                                            System.out.print(resultSet_1.getInt(1)+"\t");
-                                                            System.out.print(resultSet_1.getString(2)+"\t");
-                                                            System.out.print(resultSet_1.getString(3)+"\t");
-                                                            System.out.print(resultSet_1.getString(4)+"\t");
-                                                            System.out.print(resultSet_1.getDate(5)+"\t");
-                                                            System.out.print(resultSet_1.getDate(6)+"\t");
-                                                            System.out.print(resultSet_1.getInt(7)+"\t");
-                                                            System.out.print(resultSet_1.getString(8)+"\t");
+                                                            System.out.print(resultSet_1.getInt(1)+", ");
+                                                            System.out.print(resultSet_1.getString(2)+", ");
+                                                            System.out.print(resultSet_1.getString(3)+", ");
+                                                            System.out.print(resultSet_1.getString(4)+", ");
+                                                            System.out.print(resultSet_1.getTimestamp(5)+", ");
+                                                            System.out.print(resultSet_1.getTimestamp(6)+", ");
+                                                            System.out.print(resultSet_1.getInt(7)+", ");
+                                                            System.out.print(resultSet_1.getString(8));
                                                             System.out.print(resultSet_1.getString(9));
                                                             System.out.println();
                                                         }
@@ -884,6 +885,7 @@ class project
                                 	while (true){
                                         System.out.println("Please enter your ID.");
                                         driver_id = scan.nextInt();
+										scan.nextLine();
                                         String find_id = "SELECT id from driver where id = ?;";
                                         pstmt_id = getPreparedStatement(con,find_id);
                                         pstmt_id.setInt(1,driver_id);
@@ -905,28 +907,30 @@ class project
 								System.out.println("Please enter the coordinates of your location.");
 								coor_x = scan.nextInt();
 								coor_y = scan.nextInt();
+								scan.nextLine();
 
 								// get max distance
 								System.out.println("Please entere the maximum distance from you to the passenger.");
 								max_dis = scan.nextInt();
+								scan.nextLine();
 
 								// search for qualified and open requests in the distance
 								try{
 									String search_sql = "SELECT r.id, p.name, r.passengers, r.start_location, r.destination "+
 														"FROM request r, driver d, vehicle v, taxi_stop ts, passenger p "+
-														"WHERE d.id=" + driver_id + " and d.vehicle_id=v.id and v.seats>=r.passengers and r.taken=0 and v.model LIKE \'r.model%\' and d.driving_years>=r.driving_years and r.start_location=ts.name and "+ max_dis + ">=ABS(" + coor_x + "-ts.location_x)+ABS("+ coor_y +"-ts.location_y) and r.passenger_id=p.id;";
+														"WHERE d.id=" + driver_id + " and d.vehicle_id=v.id and v.seats>=r.passengers and r.taken=0 and d.driving_years>=r.driving_years and r.start_location=ts.name and "+ max_dis + ">=(ABS(" + coor_x + "-ts.location_x)+ABS("+ coor_y +"-ts.location_y)) and r.passenger_id=p.id;";
 									pstmt_search = getPreparedStatement(con, search_sql);
 									resset_search = pstmt_search.executeQuery();
 									if (!resset_search.isBeforeFirst()){
 										System.out.println("No records found.");
 									}else{
+										System.out.println("request ID, passenger name, num of passengers, start location, destination");
 										while (resset_search.next()){
-											System.out.println("request ID, passenger name, num of passengers, start location, destination\n");
-											System.out.print(resset_search.getInt(1)+"\t");
-											System.out.print(resset_search.getString(2)+"\t");
-											System.out.print(resset_search.getInt(3)+"\t");
-											System.out.print(resset_search.getString(4)+"\t");
-											System.out.print(resset_search.getString(5)+"\t");
+											System.out.print(resset_search.getInt(1)+", ");
+											System.out.print(resset_search.getString(2)+", ");
+											System.out.print(resset_search.getInt(3)+", ");
+											System.out.print(resset_search.getString(4)+", ");
+											System.out.print(resset_search.getString(5));
 											System.out.println();
 										}
 									}
@@ -938,21 +942,228 @@ class project
 									break;
 								}
 								
+								try{
+									pstmt_id.close();
+									resset_id.close();
+									pstmt_search.close();
+									resset_search.close();						
+								}catch (SQLException e)
+								{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+								break;}
+
 							} break;
-							case 2:{
-								System.out.println("Please enter your ID.");
-								int driver_id = scan.nextInt();
-								System.out.println("Please enter the request ID.");
-								int request_id = scan.nextInt();
-								//temporary
-								System.out.println(driver_id);
-								System.out.println(request_id);
+							case 2:{ //take a request
+
+								int driver_id;
+								int request_id;
+								PreparedStatement pstmt_id;
+								PreparedStatement pstmt_request;
+								PreparedStatement pstmt_search;
+								PreparedStatement pstmt_update;
+								PreparedStatement pstmt_trip;
+								ResultSet resset_id;
+								ResultSet resset_request;
+								ResultSet resset_search;
+								
+								// check valid driver id
+								try{
+                                	while (true){
+                                        System.out.println("Please enter your ID.");
+                                        driver_id = scan.nextInt();
+										scan.nextLine();
+                                        String find_id = "SELECT id from driver where id = ?;";
+                                        pstmt_id = getPreparedStatement(con,find_id);
+                                        pstmt_id.setInt(1,driver_id);
+                                        resset_id = pstmt_id.executeQuery();
+                                        if (!resset_id.isBeforeFirst()){
+                                            System.out.println("[ERROR] ID not found.");
+                                            continue;
+                                        }break;
+                                    }
+                                }catch(SQLException e)
+                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                    break;
+                                }catch (NullPointerException e)
+                                    {System.out.println("[ERROR] pstmt_id maybe not be properly set up.");
+                                    break;
+                                }
+
+								// check valid request id
+								try{
+                                	while (true){
+                                        System.out.println("Please enter the request ID.");
+                                        request_id = scan.nextInt();
+										scan.nextLine();
+                                        String find_request_id = "SELECT id from request where id = ?;";
+                                        pstmt_request = getPreparedStatement(con,find_request_id);
+                                        pstmt_request.setInt(1,request_id);
+                                        resset_request = pstmt_request.executeQuery();
+                                        if (!resset_request.isBeforeFirst()){
+                                            System.out.println("[ERROR] ID not found.");
+                                            continue;
+                                        }break;
+                                    }
+                                }catch(SQLException e)
+                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                    break;
+                                }catch (NullPointerException e)
+                                    {System.out.println("[ERROR] pstmt_request maybe not be properly set up.");
+                                    break;
+                                }
+								
+								// take request
+								try{
+									String search_sql = "SELECT r.passenger_id, r.start_location, r.destination, p.name "+
+														"FROM request r, driver d, vehicle v, passenger p "+
+														"WHERE "+request_id+"=r.id and d.id="+driver_id+" and d.vehicle_id=v.id and v.seats>=r.passengers and d.driving_years>=r.driving_years and r.passenger_id=p.id;";
+									pstmt_search = getPreparedStatement(con, search_sql);
+									resset_search = pstmt_search.executeQuery();
+									if(!resset_search.isBeforeFirst()){
+										System.out.println("[ERROR] Request not found or the criteria of the request is not satisfied.");
+									}
+									else{
+										resset_search.next();
+										int p_id = resset_search.getInt(1);
+										String start_loc = resset_search.getString(2);
+										String des = resset_search.getString(3);
+										String p_name = resset_search.getString(4);
+										String update_request = "UPDATE request " +
+																"SET taken=1 " +
+																"WHERE id=" + request_id + ";";
+										pstmt_update = getPreparedStatement(con, update_request);
+										pstmt_update.executeUpdate();
+										String sql_trip = "insert into trip (driver_id, passenger_id, start_time, end_time, start_location, destination, fee) VALUES(?,?,?,NULL,?,?,NULL)";					
+										pstmt_trip = getPreparedStatement(con,sql_trip);
+										DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+										LocalDateTime now = LocalDateTime.now();
+										pstmt_trip.setInt(1,driver_id);
+										pstmt_trip.setInt(2,p_id);
+										pstmt_trip.setTimestamp(3,java.sql.Timestamp.valueOf(now.format(dtf)));
+										pstmt_trip.setString(4,start_loc);
+										pstmt_trip.setString(5,des);
+										pstmt_trip.executeUpdate();
+										System.out.println("Trip ID, Passenger name, Start");
+										System.out.println(", "+p_name+", "+dtf.format(now));
+									}
+									
+								}catch(SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}catch (NullPointerException e)
+									{System.out.println("[ERROR] pstmt maybe not be properly set up.");
+									break;
+								}
+
+								try{
+									pstmt_id.close();
+									resset_id.close();
+									pstmt_request.close();
+									resset_request.close();
+									pstmt_search.close();
+									resset_search.close();
+									//pstmt_update.close();
+									//pstmt_trip.close();				
+								}catch (SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}
 							} break;
-							case 3:{
-								System.out.println("Please enter your ID.");
-								int driver_id = scan.nextInt();
-								//temporary
-								System.out.println(driver_id);
+							case 3:{ // finish a trip
+
+								int driver_id;
+								String finish;
+								PreparedStatement pstmt_id;
+								PreparedStatement pstmt_unfinish;
+								PreparedStatement pstmt_finish;
+								ResultSet resset_id;
+								ResultSet resset_unfinish;
+
+								// check valid driver id
+								try{
+                                	while (true){
+                                        System.out.println("Please enter your ID.");
+                                        driver_id = scan.nextInt();
+										scan.nextLine();
+                                        String find_id = "SELECT id from driver where id = ?;";
+                                        pstmt_id = getPreparedStatement(con,find_id);
+                                        pstmt_id.setInt(1,driver_id);
+                                        resset_id = pstmt_id.executeQuery();
+                                        if (!resset_id.isBeforeFirst()){
+                                            System.out.println("[ERROR] ID not found.");
+                                            continue;
+                                        }break;
+                                    }
+                                }catch(SQLException e)
+                                    {System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+                                    break;
+                                }catch (NullPointerException e)
+                                    {System.out.println("[ERROR] pstmt_id maybe not be properly set up.");
+                                    break;
+                                }			
+
+								//check unfinish trip
+								try{
+									String unfinish_sql = "SELECT t.id, p.name, t.passenger_id, t.start_time "+
+														"FROM trip t, passenger p "+
+														"WHERE t.driver_id="+driver_id+" and end_time is NULL and t.passenger_id=p.id;";
+									pstmt_unfinish = getPreparedStatement(con, unfinish_sql);
+									resset_unfinish = pstmt_unfinish.executeQuery();
+									if (!resset_unfinish.isBeforeFirst()){
+										System.out.println("No unfinished trip.");
+									}else{
+										resset_unfinish.next();
+										System.out.println("Trip ID, Paassenger ID, Start");
+										int trip_id = resset_unfinish.getInt(1);
+										Timestamp start = resset_unfinish.getTimestamp(4);
+										String p_name=resset_unfinish.getString(2);
+										System.out.print(trip_id+", ");
+										System.out.print(resset_unfinish.getInt(3)+", ");
+										System.out.print(start);
+										System.out.println();
+										System.out.println("Do you want to finish the trip? [y/n]");
+										finish = scan.nextLine();
+										if(finish.equals("y")){
+											DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+											LocalDateTime now = LocalDateTime.now();
+											Timestamp end = java.sql.Timestamp.valueOf(now.format(dtf));
+											long milliseconds = end.getTime() - start.getTime();
+											int seconds = (int)milliseconds/1000;
+											int mins = seconds/60;
+											String finish_sql = "UPDATE trip SET end_time=?, fee=? WHERE id="+trip_id+";";
+											pstmt_finish = getPreparedStatement(con, finish_sql);
+											pstmt_finish.setTimestamp(1, end);
+											pstmt_finish.setInt(2, mins);
+											pstmt_finish.executeUpdate();
+											System.out.println("Trip ID, Passengerr name, Start, End, Fee");
+											System.out.print(trip_id+", ");
+											System.out.print(p_name+", ");
+											System.out.print(start+", ");
+											System.out.print(end+", ");
+											System.out.print(mins);
+											System.out.println();
+										}
+										else if (!finish.equals("n")){
+											System.out.println("[ERROR] Invalid input.");
+										}
+									}
+								}catch(SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}catch (NullPointerException e)
+									{System.out.println("[ERROR] pstmt_search maybe not be properly set up.");
+									break;
+								}
+								try{
+									pstmt_id.close();
+									resset_id.close();
+									pstmt_unfinish.close();
+									resset_unfinish.close();
+									//pstmt_finish.close();			
+								}catch (SQLException e)
+									{System.out.println("[ERROR] SQL exception in pstmt.set. " + e); 
+									break;
+								}
+									
 							} break;
 							case 4:{
 								driverflag = false;
@@ -988,26 +1199,34 @@ class project
 								//get min and max
 								System.out.println("Please enter the minimum traveling distance.");
 								min_dis = scan.nextInt();
+								scan.nextLine();
 								System.out.println("Please enter the maximum traveling distance.");
 								max_dis = scan.nextInt();
+								scan.nextLine();
 
 								//find trip
 								try{
-									String trips_sql = "SELECT t.id, d.name, p.name, t.start_location, t.destination " +
+									String trips_sql = "SELECT t.id, d.name, p.name, t.start_location, t.destination, t.start_time, t.end_time " +
 														"FROM trip t, taxi_stop ts1, taxi_stop ts2, driver d, passenger p " +
-														"WHERE t.start_location=ts1.name and t.destination=ts2.name and "+ min_dis + "<=ABS(ts1.location_x-ts2.locationi_x)+ABS(ts1.location_y-ts2.location_y) and "+ max_dis + ">=ABS(ts1.location_x-ts2.locationi_x)+ABS(ts1.location_y-ts2.location_y) and t.driver_id=d.id and t.passenger_id=p.id;";
+														"WHERE t.start_location=ts1.name and t.destination=ts2.name and "+ min_dis + "<=ABS(ts1.location_x-ts2.location_x)+ABS(ts1.location_y-ts2.location_y) and "+ max_dis + ">=ABS(ts1.location_x-ts2.location_x)+ABS(ts1.location_y-ts2.location_y) and t.driver_id=d.id and t.passenger_id=p.id;";
 									trips_pstmt = getPreparedStatement(con, trips_sql);            
 									resset_trips = trips_pstmt.executeQuery();
 									if (!resset_trips.isBeforeFirst()){
 										System.out.println("No records found.");
 									}else{
+										System.out.println("trip id, driver name, passenger name, start location, destination, duration");
 										while (resset_trips.next()){
-											System.out.println("trip id, driver name, passenger name, start location, destination, duration\n");
-											System.out.print(resultSet_1.getInt(1)+"\t");
-											System.out.print(resultSet_1.getString(2)+"\t");
-											System.out.print(resultSet_1.getString(3)+"\t");
-											System.out.print(resultSet_1.getString(4)+"\t");;
-											System.out.print(resultSet_1.getString(5)+"\t");
+											System.out.print(resset_trips.getInt(1)+", ");
+											System.out.print(resset_trips.getString(2)+", ");
+											System.out.print(resset_trips.getString(3)+", ");
+											System.out.print(resset_trips.getString(4)+", ");;
+											System.out.print(resset_trips.getString(5)+", ");
+											Timestamp start = resset_trips.getTimestamp(6);
+											Timestamp end = resset_trips.getTimestamp(7);
+											long milliseconds = end.getTime() - start.getTime();
+											int seconds = (int)milliseconds/1000;
+											int mins = seconds/60;
+											System.out.print(mins);
 											System.out.println();
 										}
 									}
