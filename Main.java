@@ -160,32 +160,78 @@ class Main
 	}
 
 	// get user Choice
-	private static int getChoice( int start, int end )
+	private static int getChoice(Scanner scan, int start, int end )
 	{
-		Scanner scan = new Scanner(System.in) ;
-		String input ;
-		int choice ;
+		// Scanner scan = new Scanner(System.in) ;
+		// String input ;
+		int choice = 0;
+		boolean flag = true ;
 		
+		System.out.println("Please enter["+ start + "-" + end +"].");
 		// loop for a valid input
-		do
+		while (scan.hasNextLine() && flag)
 		{
-			System.out.println("Please enter["+ start + "-" + end +"].");
-			input = scan.nextLine();
-			// System.out.println("input is " + input);
+			// System.out.println("Please enter["+ start + "-" + end +"].");
+			
 			try
 			{
-				choice = Integer.parseInt(input);
+				choice = scan.nextInt();
+				if ( choice >= start && choice <= end )
+				{
+					flag = false ;
+				}
+				else
+				{
+					System.out.println("[ERROR] Invalid input.");
+					System.out.println("Please enter["+ start + "-" + end +"].");
+				}
+				
+			}catch (NumberFormatException e)
+			{ System.out.println("[ERROR] Invalid input.");
+				 scan.nextLine();
+				System.out.println("Please enter["+ start + "-" + end +"].");
+			}catch (Exception e)
+			{ System.out.println("[ERROR] Invalid input."); 
+				 scan.nextLine();
+				System.out.println("Please enter["+ start + "-" + end +"].");
+			}
+			
+			//if (flag == false )
+			//	break ;
+			/*
+			try
+			{
+			// try{
+			choice = scan.nextInt();
+			//} catch (NoSuchElementException e)
+			//{ System.out.println("[ERROR] NO more input."); 
+			//}catch (Exception e)
+			//{ System.out.println("[ERROR] NO more input."); }
+			// System.out.println("input is " + input);
+			//try
+			//{
+				//choice = Integer.parseInt(input);
 				//System.out.println("Choice is " + choice);
 				
 				if ( choice >= start && choice <= end )
+				{
+					scan.close();
 					return choice;
+				}
 				else
 					System.out.println("[ERROR] Invalid input.");
 			}catch (NumberFormatException e)
 			{ System.out.println("[ERROR] Invalid input.");
+				scan.nextLine();
 			}catch (Exception e)
-			{ System.out.println("[ERROR] Invalid input."); }
-		} while (true) ;
+			{ System.out.println("[ERROR] Invalid input."); 
+				scan.nextLine();}
+				
+			*/
+		} 
+		
+		return choice ;
+		
 		
 	}
 
@@ -234,11 +280,12 @@ class Main
 		// setup user input
 		int choice ;
 		boolean flag = true ;
+		Scanner scan = new Scanner(System.in) ;
 		
 		do
 		{
 			System.out.println("Welcome! Who are you?");
-			System.out.println("1. An administrator?");
+			System.out.println("1. An administrator");
 			System.out.println("2. A passenager");
 			System.out.println("3. A driver");
 			System.out.println("4. A manager");
@@ -246,7 +293,7 @@ class Main
 			
 			// get user input
 			// int getInput( int start, int end );
-			choice = getChoice (1,5);
+			choice = getChoice (scan, 1,5);
 			
 			switch ( choice )
 			{
@@ -264,7 +311,7 @@ class Main
 					System.out.println("4. Check data");
 					System.out.println("5. Go back");
 
-					choice = getChoice (1,5);
+					choice = getChoice (scan, 1,5);
 					
 					switch ( choice )
 					{
@@ -337,15 +384,18 @@ class Main
 						}break;
 						case 3 :
 						{
-							Scanner sca = new Scanner(System.in) ;
-							String input ;
+							// Scanner sca = new Scanner(System.in) ;
+							String input = "test_data";
 							String path ;
 							String fileRow ;		
 							BufferedReader csvReader ;
 							String data[];
 	
 							System.out.println("Please enter the folder path");
-							input = sca.nextLine();
+							// input = sca.nextLine();
+							input = scan.nextLine();
+							if (scan.hasNextLine())
+								input = scan.nextLine();
 							path = "./" + input +"/";
 							
 							System.out.print("Processing...");
@@ -454,7 +504,7 @@ class Main
 								{ System.out.println("[ERROR] pstmt maybe not be properly set up."); }
 							}
 							close_csv(csvReader);
-
+							// sca.close();
 							System.out.println("Data is loaded!");
 
 						}break;
@@ -482,13 +532,13 @@ class Main
 				{
 					
                                     boolean passengerflag = true; 
-                                    Scanner scan = new Scanner(System.in);
+                                    // Scanner scan = new Scanner(System.in);
                                     do{
                                         System.out.println("Passenger, what would you like to do?");
                                         System.out.println("1. Request a ride");
                                         System.out.println("2. Check trip records");
                                         System.out.println("3. Go back");
-                                        choice = getChoice(1,3);
+                                        choice = getChoice(scan, 1,3);
                                         switch (choice){
                                             case 1: {
                                                 
@@ -857,7 +907,7 @@ class Main
 				{
 					// A driver
 					boolean driverflag = true;
-					Scanner scan = new Scanner(System.in);
+					// Scanner scan = new Scanner(System.in);
 
 					do{
 						System.out.println("Driver, what would you like to do?");
@@ -866,7 +916,7 @@ class Main
 						System.out.println("3. Finish a trip");
 						System.out.println("4. Go back");
 
-						int driver_choice = getChoice (1,4);
+						int driver_choice = getChoice (scan, 1,4);
 
 						switch (driver_choice){
 							case 1: { // search request
@@ -1176,14 +1226,14 @@ class Main
 				{
 					// A manager
 					boolean managerflag = true;
-					Scanner scan = new Scanner(System.in);
+					// Scanner scan = new Scanner(System.in);
 
 					do{
 						System.out.println("Manager, what would you like to do?");
 						System.out.println("1. Find trips");
 						System.out.println("2. Go back");
 
-						int manager_choice = getChoice (1,2);
+						int manager_choice = getChoice (scan, 1,2);
 
 						switch(manager_choice){
 							case 1: {
@@ -1253,6 +1303,6 @@ class Main
 			}
 		}while (flag) ;
 		
-
+		scan.close();
 	}
 }
